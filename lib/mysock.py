@@ -2,6 +2,10 @@ import socket
 import epdb
 MSGLEN=1024
 
+class ccolors:
+	OKGREEN='\033[92m'
+	ENDC='\033[0m'
+
 class clsProcs:
 	pid=0
 	cmdline=''
@@ -10,11 +14,13 @@ class clsProcs:
 	statline=''
 	curState=''
 	prio=''
-	def __init__(self,pid=0,cmdline='',statline=''):
+	address=''
+	def __init__(self,pid=0,cmdline='',statline='',prio='',address=''):
 		stats=statline.strip().split()
 		self.pid=pid
 		self.cmdline=cmdline
 		self.statline=statline
+		self.address=address
 		try:
 			self.curState=stats[2]
 			self.prio=stats[39]
@@ -37,7 +43,7 @@ class mySock:
 
 	def mysend(self,msg):
 		totalsent=0
-		while totalsent<MSGLEN:
+		while totalsent<len(msg):
 			sent=self.sock.send(msg)
 			if sent==0:
 				raise RuntimeError("socket connection broken")

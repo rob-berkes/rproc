@@ -37,7 +37,6 @@ while 1:
 	PIDLIST=build_pidlist()
 	MSGLIST=build_rproc_list(PIDLIST)
 	msg=build_msg_list(MSGLIST)
-	epdb.st()
 	s.mysend((msg))
 	time.sleep(INTERVAL)	
 	continue
