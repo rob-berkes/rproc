@@ -4,6 +4,14 @@ MSGLEN=1024
 
 class ccolors:
 	OKGREEN='\033[92m'
+	OKGRAY='\033[90m'
+	OKPINK='\033[91m'
+	OKYELLOW='\033[93m'
+	OKBLUE='\033[94m'
+	OKPURPLE='\033[95m'
+	OKAQUA='\033[96m'
+	OKWHITE='\033[97m'
+	OKNEXT='\033[92m'
 	ENDC='\033[0m'
 
 class clsProcs:
@@ -15,15 +23,30 @@ class clsProcs:
 	curState=''
 	prio=''
 	address=''
-	def __init__(self,pid=0,cmdline='',statline='',prio='',address=''):
+	statuses=[]
+	kerneljiffies=0
+	userjiffies=0
+	def __init__(self,pid=0,statuses='',statline='',prio='',address=''):
 		stats=statline.strip().split()
 		self.pid=pid
-		self.cmdline=cmdline
+		self.cmdline=statuses[1]
 		self.statline=statline
 		self.address=address
+		self.statuses=statuses
 		try:
 			self.curState=stats[2]
+		except IndexError:
+			pass
+		try:
 			self.prio=stats[39]
+		except IndexError:
+			pass
+		try:
+			self.kerneljiffies=stats[14]
+		except IndexError:
+			pass
+		try:
+			self.userjiffies=stats[13]
 		except IndexError:
 			pass
 		return
@@ -51,10 +74,8 @@ class mySock:
 
 	def myrecv(self):
 		msg=''
-		while len(msg) < MSGLEN:
-			chunk=self.sock.recv(MSGLEN-len(msg))
-			if chunk=='':
-				raise RuntimeError("You fucked it up you dumbshit")
+		while len(msg) < 599900:
+			chunk=self.sock.recv()
 			msg+=chunk
 		return msg
 

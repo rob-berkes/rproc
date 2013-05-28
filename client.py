@@ -1,4 +1,6 @@
 import lib.mysock
+import pickle
+import re
 import os
 import epdb
 import time
@@ -12,31 +14,36 @@ def build_pidlist():
 	for pid in pids:
 		cmdline=open('/proc/'+str(pid)+'/cmdline','r')
 		statline=open('/proc/'+str(pid)+'/stat','r')
-		PIDLIST.append(lib.mysock.clsProcs(pid=pid,cmdline=cmdline.read(),statline=statline.read()))
+		statusline=open('/proc/'+str(pid)+'/status','r')
+		statuses=re.split('\W+',statusline.read())
+		PIDLIST.append(lib.mysock.clsProcs(pid=pid,statuses=statuses,statline=statline.read()))
 		cmdline.close()
 		statline.close()
 	return PIDLIST
 def build_rproc_list(PIDLIST):
 	MSG=[]
 	for PROC in PIDLIST:
-		if PROC.curState=='R':
-			MSG.append(lib.mysock.clsProcs(pid=PROC.pid,cmdline=PROC.cmdline,statline=PROC.statline))
+		if PROC.cmdline=='Terminal':
+			MSG.append(lib.mysock.clsProcs(pid=PROC.pid,statuses=PROC.statuses,statline=PROC.statline))
 	return MSG
 
 def build_msg_list(MSGLIST):
-	msg=''
+	msg=[]
 	for PROC in MSGLIST:
-		msg+=str(PROC.pid)+','+str(PROC.cmdline)+','+str(PROC.prio)+','
+		msg.append(lib.mysock.clsProcs(pid=PROC.pid,statuses=PROC.statuses,statline=PROC.statline))
 	return msg	
 INTERVAL=10
 pids=[]
-s=Connect()
 while 1:
+	s=Connect()
 	PIDLIST=[]
 	msg=''
 	PIDLIST=build_pidlist()
 	MSGLIST=build_rproc_list(PIDLIST)
 	msg=build_msg_list(MSGLIST)
-	s.mysend((msg))
+	msgSt=pickle.dumps(msg)
+	print len(msgSt)
+	s.mysend((msgSt))
+	s.sock.shutdown(1)
 	time.sleep(INTERVAL)	
 	continue
